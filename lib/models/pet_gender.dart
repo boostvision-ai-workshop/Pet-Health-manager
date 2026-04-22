@@ -1,4 +1,4 @@
-/// PRD §7.5：性别 — 公 / 母 / 未知（框线）。
+/// PRD §7.5：性别 — 弟弟 / 妹妹 / 未知（框线）。
 enum PetGender {
   male,
   female,

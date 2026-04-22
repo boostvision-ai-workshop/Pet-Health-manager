@@ -157,8 +157,8 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
             const SizedBox(height: 8),
             SegmentedButton<PetGender>(
               segments: const [
-                ButtonSegment(value: PetGender.male, label: Text('公')),
-                ButtonSegment(value: PetGender.female, label: Text('母')),
+                ButtonSegment(value: PetGender.male, label: Text('弟弟')),
+                ButtonSegment(value: PetGender.female, label: Text('妹妹')),
                 ButtonSegment(value: PetGender.unknown, label: Text('未知')),
               ],
               selected: {_gender},
