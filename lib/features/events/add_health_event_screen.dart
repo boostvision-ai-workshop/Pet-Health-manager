@@ -57,6 +57,19 @@ class _AddHealthEventScreenState extends ConsumerState<AddHealthEventScreen> {
     });
   }
 
+  void _setReminderOnDayAtNine(DateTime day) {
+    setState(() {
+      _reminderDueDate = DateTime(day.year, day.month, day.day, 9, 0);
+    });
+  }
+
+  /// 快速选「某天 09:00」，不打开日历弹层（与 [showDatePicker] 互补）。
+  void _setReminderAfterCalendarDaysFromToday(int days) {
+    final base = DateTime.now();
+    final t = base.add(Duration(days: days));
+    _setReminderOnDayAtNine(DateTime(t.year, t.month, t.day));
+  }
+
   Future<void> _pickReminderDate() async {
     final date = await showDatePicker(
       context: context,
@@ -65,9 +78,7 @@ class _AddHealthEventScreenState extends ConsumerState<AddHealthEventScreen> {
       lastDate: DateTime.now().add(const Duration(days: 365 * 3)),
     );
     if (date != null) {
-      setState(() {
-        _reminderDueDate = DateTime(date.year, date.month, date.day, 9, 0);
-      });
+      _setReminderOnDayAtNine(date);
     }
   }
 
@@ -203,7 +214,7 @@ class _AddHealthEventScreenState extends ConsumerState<AddHealthEventScreen> {
             title: const Text('下次提醒'),
             subtitle: Text(
               _reminderDueDate == null
-                  ? '未设置（可选）'
+                  ? '未设置（可选），默认提醒时刻为当天 9:00'
                   : _reminderDueDate!.toString().substring(0, 16),
             ),
             trailing: Row(
@@ -216,11 +227,46 @@ class _AddHealthEventScreenState extends ConsumerState<AddHealthEventScreen> {
                         setState(() => _reminderDueDate = null),
                   ),
                 IconButton(
-                  icon: const Icon(Icons.notifications_outlined),
+                  icon: const Icon(Icons.calendar_month_outlined),
+                  tooltip: '选择具体日期',
                   onPressed: _pickReminderDate,
                 ),
               ],
             ),
+          ),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '快速选日期',
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: ChongbanTokens.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              ActionChip(
+                label: const Text('明天'),
+                onPressed: () =>
+                    _setReminderAfterCalendarDaysFromToday(1),
+              ),
+              ActionChip(
+                label: const Text('7天后'),
+                onPressed: () => _setReminderAfterCalendarDaysFromToday(7),
+              ),
+              ActionChip(
+                label: const Text('30天后'),
+                onPressed: () => _setReminderAfterCalendarDaysFromToday(30),
+              ),
+              ActionChip(
+                label: const Text('90天后'),
+                onPressed: () => _setReminderAfterCalendarDaysFromToday(90),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
           FilledButton(
