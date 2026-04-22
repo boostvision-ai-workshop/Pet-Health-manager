@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 通知图标着色颜色（主题色） -->
+    <color name="notification_color">#1A8CFF</color>
+    <!-- 文本选择手柄颜色 -->
+    <color name="colorPrimary">#1A8DFF</color>
+    <color name="colorAccent">#1A8DFF</color>
+</resources>
+
