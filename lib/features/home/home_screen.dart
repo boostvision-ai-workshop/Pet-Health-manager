@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../app/app_theme.dart';
 import '../../app/providers.dart';
@@ -53,15 +52,7 @@ class HomeScreen extends ConsumerWidget {
           WeightTrendCard(events: events),
           const SizedBox(height: ChongbanTokens.spaceCard),
           RemindersStrip(reminders: reminders),
-          const SizedBox(height: 80),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/events/add'),
-        icon: const Icon(Icons.add),
-        label: const Text('记录'),
-        backgroundColor: ChongbanTokens.primary,
-        foregroundColor: Colors.white,
       ),
     );
   }

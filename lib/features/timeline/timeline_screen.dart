@@ -3,6 +3,7 @@ import 'dart:async' show unawaited;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../app/app_theme.dart';
@@ -163,6 +164,13 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
 
     return Scaffold(
       appBar: AppBar(title: const Text('大事记')),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => context.push('/events/add'),
+        icon: const Icon(Icons.add),
+        label: const Text('记录'),
+        backgroundColor: ChongbanTokens.primary,
+        foregroundColor: Colors.white,
+      ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -201,7 +209,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
             child: events.isEmpty
                 ? const EmptyState(
                     title: '还没有大事记',
-                    subtitle: '去首页记录体重或健康事件吧。',
+                    subtitle: '点右下角「记录」添加体重或健康事件吧。',
                     icon: Icons.timeline_outlined,
                   )
                 : visible.isEmpty
