@@ -54,6 +54,7 @@ void main() {
       events: events,
     );
     expect(r.daysSinceDeworm, 4);
-    expect(r.daysSinceVaccine, 53);
+    // 2026-03-01 → 2026-04-22 的自然日差为 52（与 [MilestoneService] 按日历日相减一致）
+    expect(r.daysSinceVaccine, 52);
   });
 }

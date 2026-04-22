@@ -1,4 +1,5 @@
 import 'package:chongban_health/app/chongban_app.dart';
+import 'package:flutter/material.dart' show NavigationBar;
 import 'package:chongban_health/app/providers.dart';
 import 'package:chongban_health/models/models.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,7 +28,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('首页'), findsOneWidget);
+    // AppBar 标题 + 底栏标签均为「首页」
+    expect(find.text('首页'), findsNWidgets(2));
     expect(find.byType(NavigationBar), findsOneWidget);
   });
 }

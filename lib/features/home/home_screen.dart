@@ -19,8 +19,21 @@ class HomeScreen extends ConsumerWidget {
     final reminders = ref.watch(remindersSnapshotProvider);
 
     if (pet == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        appBar: AppBar(title: const Text('首页')),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(),
+              const SizedBox(height: 16),
+              Text(
+                '正在加载档案…',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ],
+          ),
+        ),
       );
     }
 

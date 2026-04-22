@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,6 +24,7 @@ class _AddHealthEventScreenState extends ConsumerState<AddHealthEventScreen> {
   final _valueController = TextEditingController();
   final _noteController = TextEditingController();
   DateTime? _reminderDueDate;
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -70,6 +72,7 @@ class _AddHealthEventScreenState extends ConsumerState<AddHealthEventScreen> {
   }
 
   Future<void> _save() async {
+    if (_saving) return;
     final repo = ref.read(petRepositoryProvider);
     double? value;
     if (_type == HealthEventType.weight) {
@@ -98,27 +101,49 @@ class _AddHealthEventScreenState extends ConsumerState<AddHealthEventScreen> {
       return;
     }
 
-    await repo.saveEvent(event);
+    setState(() => _saving = true);
+    try {
+      await repo.saveEvent(event);
 
-    if (_reminderDueDate != null) {
-      final rem = Reminder(
-        id: 'rem_$ts',
-        eventId: event.id,
-        title: '${healthEventTypeLabel(_type)}提醒',
-        dueDate: _reminderDueDate!,
-        status: ReminderStatus.todo,
+      if (_reminderDueDate != null) {
+        final rem = Reminder(
+          id: 'rem_$ts',
+          eventId: event.id,
+          title: '${healthEventTypeLabel(_type)}提醒',
+          dueDate: _reminderDueDate!,
+          status: ReminderStatus.todo,
+        );
+        await repo.saveReminder(rem);
+      }
+
+      try {
+        await LocalNotificationService.syncWithRepository(repo);
+      } on Object catch (e, st) {
+        if (kDebugMode) {
+          debugPrint('LocalNotificationService: $e\n$st');
+        }
+      }
+      ref.bumpAppData();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('已保存')),
       );
-      await repo.saveReminder(rem);
+      context.pop();
+    } on Object catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('saveEvent: $e\n$st');
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('保存失败，请重试。')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
     }
-
-    await LocalNotificationService.syncWithRepository(repo);
-    ref.bumpAppData();
-
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('已保存')),
-    );
-    context.pop();
   }
 
   @override
@@ -129,6 +154,7 @@ class _AddHealthEventScreenState extends ConsumerState<AddHealthEventScreen> {
         padding: const EdgeInsets.all(ChongbanTokens.spacePage),
         children: [
           DropdownButtonFormField<HealthEventType>(
+            // ignore: deprecated_member_use — 受控于 [_type]/[onChanged]；迁移至 initialValue 需改表单状态
             value: _type,
             decoration: const InputDecoration(labelText: '类型'),
             items: HealthEventType.values
@@ -198,8 +224,14 @@ class _AddHealthEventScreenState extends ConsumerState<AddHealthEventScreen> {
           ),
           const SizedBox(height: 24),
           FilledButton(
-            onPressed: _save,
-            child: const Text('保存'),
+            onPressed: _saving ? null : _save,
+            child: _saving
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('保存'),
           ),
         ],
       ),

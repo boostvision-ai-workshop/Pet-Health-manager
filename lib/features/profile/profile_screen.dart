@@ -1,4 +1,3 @@
-import 'package:characters/characters.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,8 +5,8 @@ import 'package:intl/intl.dart';
 
 import '../../app/app_theme.dart';
 import '../../app/providers.dart';
-import '../../models/models.dart';
 import '../../services/milestone_service.dart';
+import '../../shared/empty_state.dart';
 import '../../shared/pet_labels.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -19,7 +18,14 @@ class ProfileScreen extends ConsumerWidget {
     final events = ref.watch(eventsSnapshotProvider);
 
     if (pet == null) {
-      return const Scaffold(body: SizedBox.shrink());
+      return Scaffold(
+        appBar: AppBar(title: const Text('我的')),
+        body: const EmptyState(
+          title: '档案未加载',
+          subtitle: '请稍候，或从底部返回首页后重试。',
+          icon: Icons.pets_outlined,
+        ),
+      );
     }
 
     final m = MilestoneService.compute(

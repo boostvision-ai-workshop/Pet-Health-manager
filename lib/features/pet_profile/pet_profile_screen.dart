@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,6 +28,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
   PetGender _gender = PetGender.unknown;
   DateTime _birthday = DateTime(DateTime.now().year - 1);
   DateTime _adoptionDate = DateTime.now();
+  bool _saving = false;
 
   @override
   void initState() {
@@ -67,6 +69,7 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
   }
 
   Future<void> _submit() async {
+    if (_saving) return;
     final repo = ref.read(petRepositoryProvider);
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -110,14 +113,29 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
       initialWeight: initial ?? existing?.initialWeight,
     );
 
-    await repo.savePet(pet);
-    routerRefreshNotifier.notify();
-    ref.bumpAppData();
-    if (mounted) {
+    setState(() => _saving = true);
+    try {
+      await repo.savePet(pet);
+      routerRefreshNotifier.notify();
+      ref.bumpAppData();
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('已保存')),
       );
       context.go('/home');
+    } on Object catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('savePet: $e\n$st');
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('保存失败，请重试。')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _saving = false);
+      }
     }
   }
 
@@ -193,8 +211,14 @@ class _PetProfileScreenState extends ConsumerState<PetProfileScreen> {
             ),
             const SizedBox(height: 28),
             FilledButton(
-              onPressed: _submit,
-              child: const Text('保存'),
+              onPressed: _saving ? null : _submit,
+              child: _saving
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('保存'),
             ),
           ],
         ),

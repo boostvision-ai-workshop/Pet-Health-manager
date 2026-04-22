@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -35,11 +36,28 @@ class _RemindersListScreenState extends ConsumerState<RemindersListScreen>
 
   Future<void> _toggleDone(Reminder r, bool toDone) async {
     final repo = ref.read(petRepositoryProvider);
-    await repo.saveReminder(
-      r.copyWith(status: toDone ? ReminderStatus.done : ReminderStatus.todo),
-    );
-    await LocalNotificationService.syncWithRepository(repo);
-    ref.bumpAppData();
+    try {
+      await repo.saveReminder(
+        r.copyWith(status: toDone ? ReminderStatus.done : ReminderStatus.todo),
+      );
+      try {
+        await LocalNotificationService.syncWithRepository(repo);
+      } on Object catch (e, st) {
+        if (kDebugMode) {
+          debugPrint('LocalNotificationService: $e\n$st');
+        }
+      }
+      ref.bumpAppData();
+    } on Object catch (e, st) {
+      if (kDebugMode) {
+        debugPrint('saveReminder: $e\n$st');
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('操作失败，请重试。')),
+        );
+      }
+    }
   }
 
   @override

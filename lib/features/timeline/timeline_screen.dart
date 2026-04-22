@@ -139,6 +139,11 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       if (kDebugMode) {
         debugPrint('deleteEvent failed: $e\n$st');
       }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('删除失败，请重试。')),
+        );
+      }
     }
   }
 
